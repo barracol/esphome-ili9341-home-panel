@@ -16,7 +16,7 @@ ota:
 wifi:
   ap:
     ssid: "Pannello HA Setup"
-    password: "change-me-panel"
+    password: !secret fallback_password
 
 captive_portal:
 
