@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="980" viewBox="0 0 1500 980">
+  <rect width="1500" height="980" fill="#f7f8fa"/>
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#17202a}.title{font-size:34px;font-weight:700}.sub{font-size:22px;font-weight:700}.pin{font-size:18px;font-weight:700}.note{font-size:19px}.small{font-size:15px}.wire{fill:none;stroke-width:8;stroke-linecap:round;stroke-linejoin:round}.pad{fill:#20262e;stroke:#fff;stroke-width:2}.unused{fill:#bbb}.box{fill:#fff;stroke:#34495e;stroke-width:4;rx:24}.warn{fill:#fff5d6;stroke:#e74c3c;stroke-width:4;rx:18}
+  </style>
+  <text x="750" y="55" text-anchor="middle" class="title">ESP8266 → TFT 3,2″ Raspberry Pi V3.1</text>
+  <text x="750" y="88" text-anchor="middle" class="note">Collegamento minimo: display SPI, touch e tasti esclusi</text>
+
+  <rect x="70" y="145" width="400" height="650" class="box"/>
+  <text x="270" y="195" text-anchor="middle" class="sub">NodeMCU LoLin V3</text>
+  <text x="270" y="225" text-anchor="middle" class="note">vista dall'alto · USB in basso</text>
+  <rect x="175" y="260" width="190" height="400" rx="18" fill="#263238"/>
+  <rect x="232" y="650" width="75" height="40" rx="6" fill="#aaa"/>
+  <text x="270" y="720" text-anchor="middle" class="small">Alimentazione soltanto via USB</text>
+
+  <!-- NodeMCU connection pads -->
+  <circle cx="400" cy="300" r="12" class="pad"/><text x="380" y="307" text-anchor="end" class="pin">VU / 5V</text>
+  <circle cx="400" cy="365" r="12" class="pad"/><text x="380" y="372" text-anchor="end" class="pin">GND</text>
+  <circle cx="400" cy="430" r="12" class="pad"/><text x="380" y="437" text-anchor="end" class="pin">D5 / GPIO14</text>
+  <circle cx="400" cy="495" r="12" class="pad"/><text x="380" y="502" text-anchor="end" class="pin">D7 / GPIO13</text>
+  <circle cx="400" cy="560" r="12" class="pad"/><text x="380" y="567" text-anchor="end" class="pin">D1 / GPIO5</text>
+  <circle cx="400" cy="625" r="12" class="pad"/><text x="380" y="632" text-anchor="end" class="pin">D2 / GPIO4</text>
+  <circle cx="400" cy="690" r="12" class="pad"/><text x="380" y="697" text-anchor="end" class="pin">D0 / GPIO16</text>
+
+  <rect x="1030" y="145" width="400" height="650" class="box"/>
+  <text x="1230" y="195" text-anchor="middle" class="sub">LCD 3.2″ V3.1</text>
+  <text x="1230" y="225" text-anchor="middle" class="note">vista posteriore · header Raspberry</text>
+  <rect x="1192" y="260" width="106" height="442" rx="8" fill="#dae1e7" stroke="#34495e" stroke-width="3"/>
+  <text x="1150" y="252" text-anchor="middle" class="small">DISPARI</text><text x="1340" y="252" text-anchor="middle" class="small">PARI</text>
+  <polygon points="1160,267 1178,277 1160,287" fill="#e74c3c"/><text x="1132" y="284" text-anchor="end" class="small">PIN 1</text>
+
+  <!-- 26-pin header: odd left, even right -->
+  <g id="header">
+    <circle cx="1220" cy="278" r="10" class="unused"/><text x="1190" y="284" text-anchor="end" class="pin">1</text><circle cx="1270" cy="278" r="10" class="pad"/><text x="1300" y="284" class="pin">2 · 5V</text>
+    <circle cx="1220" cy="310" r="10" class="unused"/><text x="1190" y="316" text-anchor="end" class="pin">3</text><circle cx="1270" cy="310" r="10" class="unused"/><text x="1300" y="316" class="pin">4</text>
+    <circle cx="1220" cy="342" r="10" class="unused"/><text x="1190" y="348" text-anchor="end" class="pin">5</text><circle cx="1270" cy="342" r="10" class="pad"/><text x="1300" y="348" class="pin">6 · GND</text>
+    <circle cx="1220" cy="374" r="10" class="unused"/><text x="1190" y="380" text-anchor="end" class="pin">7</text><circle cx="1270" cy="374" r="10" class="unused"/><text x="1300" y="380" class="pin">8</text>
+    <circle cx="1220" cy="406" r="10" class="unused"/><text x="1190" y="412" text-anchor="end" class="pin">9</text><circle cx="1270" cy="406" r="10" class="unused"/><text x="1300" y="412" class="pin">10</text>
+    <circle cx="1220" cy="438" r="10" class="unused"/><text x="1190" y="444" text-anchor="end" class="pin">11</text><circle cx="1270" cy="438" r="10" class="unused"/><text x="1300" y="444" class="pin">12</text>
+    <circle cx="1220" cy="470" r="10" class="pad"/><text x="1190" y="476" text-anchor="end" class="pin">13 · RESET</text><circle cx="1270" cy="470" r="10" class="unused"/><text x="1300" y="476" class="pin">14</text>
+    <circle cx="1220" cy="502" r="10" class="pad"/><text x="1190" y="508" text-anchor="end" class="pin">15 · DC/RS</text><circle cx="1270" cy="502" r="10" class="unused"/><text x="1300" y="508" class="pin">16</text>
+    <circle cx="1220" cy="534" r="10" class="unused"/><text x="1190" y="540" text-anchor="end" class="pin">17</text><circle cx="1270" cy="534" r="10" class="unused"/><text x="1300" y="540" class="pin">18</text>
+    <circle cx="1220" cy="566" r="10" class="pad"/><text x="1190" y="572" text-anchor="end" class="pin">19 · MOSI</text><circle cx="1270" cy="566" r="10" class="unused"/><text x="1300" y="572" class="pin">20</text>
+    <circle cx="1220" cy="598" r="10" class="unused"/><text x="1190" y="604" text-anchor="end" class="pin">21</text><circle cx="1270" cy="598" r="10" class="unused"/><text x="1300" y="604" class="pin">22</text>
+    <circle cx="1220" cy="630" r="10" class="pad"/><text x="1190" y="636" text-anchor="end" class="pin">23 · SCLK</text><circle cx="1270" cy="630" r="10" class="pad"/><text x="1300" y="636" class="pin">24 · CS</text>
+    <circle cx="1220" cy="662" r="10" class="unused"/><text x="1190" y="668" text-anchor="end" class="pin">25</text><circle cx="1270" cy="662" r="10" class="unused"/><text x="1300" y="668" class="pin">26</text>
+  </g>
+
+  <!-- Exact wires; endpoints terminate directly on numbered header pads -->
+  <path d="M400 300 H760 V278 H1270" class="wire" stroke="#e53935"/>
+  <path d="M400 365 H735 V342 H1270" class="wire" stroke="#212121"/>
+  <path d="M400 430 H700 V630 H1220" class="wire" stroke="#1976d2"/>
+  <path d="M400 495 H680 V566 H1220" class="wire" stroke="#ef6c00"/>
+  <path d="M400 560 H800 V630 H1270" class="wire" stroke="#20a65a"/>
+  <path d="M400 625 H650 V502 H1220" class="wire" stroke="#f2c500"/>
+  <path d="M400 690 H625 V470 H1220" class="wire" stroke="#8e44ad"/>
+
+  <rect x="80" y="835" width="1340" height="105" class="warn"/>
+  <text x="110" y="875" class="sub" fill="#c0392b">ATTENZIONE</text>
+  <text x="110" y="910" class="note">OLED scollegato. Lascia liberi touch e tasti. Non collegare i pin 1 e 17. Alimenta il NodeMCU solo via USB.</text>
+</svg>

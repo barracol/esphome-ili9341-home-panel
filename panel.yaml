@@ -1,0 +1,257 @@
+esphome:
+  name: ili9341-home-panel
+  friendly_name: ILI9341 Home Panel
+
+esp8266:
+  board: nodemcuv2
+
+logger:
+  level: INFO
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ap:
+    ssid: "Pannello HA Setup"
+    password: "change-me-panel"
+
+captive_portal:
+
+spi:
+  clk_pin: D5
+  mosi_pin: D7
+
+font:
+  - file: "gfonts://Roboto"
+    id: font_small
+    size: 16
+    glyphs: " !%()+,-./0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+  - file: "gfonts://Roboto@700"
+    id: font_medium
+    size: 24
+    glyphs: " !%()+,-./0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+  - file: "gfonts://Roboto@700"
+    id: font_large
+    size: 43
+    glyphs: " !%()+,-./0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+time:
+  - platform: homeassistant
+    id: ha_time
+
+globals:
+  - id: cached_solar_power
+    type: float
+    restore_value: false
+    initial_value: "NAN"
+  - id: cached_solar_today
+    type: float
+    restore_value: false
+    initial_value: "NAN"
+  - id: last_solarman_update_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: "0"
+  - id: display_page
+    type: int
+    restore_value: false
+    initial_value: "0"
+
+sensor:
+  - platform: homeassistant
+    id: solar_power
+    entity_id: sensor.solarman_output_active_power
+    internal: true
+    on_value:
+      then:
+        - lambda: |-
+            if (!isnan(x)) id(cached_solar_power) = x;
+  - platform: homeassistant
+    id: solar_today
+    entity_id: sensor.solarman_daily_production
+    internal: true
+    on_value:
+      then:
+        - lambda: |-
+            if (!isnan(x)) id(cached_solar_today) = x;
+  - platform: homeassistant
+    id: outside_temperature
+    entity_id: weather.forecast_casa
+    attribute: temperature
+    internal: true
+  - platform: wifi_signal
+    id: wifi_rssi
+    internal: true
+    update_interval: 30s
+  - platform: uptime
+    id: panel_uptime
+    internal: true
+
+text_sensor:
+  - platform: homeassistant
+    id: inverter_status
+    entity_id: sensor.solarman_inverter_status
+    internal: true
+  - platform: homeassistant
+    id: solarman_last_update
+    entity_id: sensor.solarman_status_lastupdate
+    internal: true
+    on_value:
+      then:
+        - lambda: |-
+            if (!x.empty() && x != "unknown" && x != "unavailable") {
+              id(last_solarman_update_ms) = millis();
+            }
+
+binary_sensor:
+  - platform: gpio
+    id: key_next
+    name: "Pannello pagina successiva"
+    internal: true
+    pin:
+      number: D6
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 40ms
+      - delayed_off: 80ms
+    on_press:
+      then:
+        - lambda: |-
+            id(display_page) = (id(display_page) + 1) % 4;
+        - component.update: tft_display
+
+color:
+  - id: bg
+    red: 4%
+    green: 7%
+    blue: 9%
+  - id: panel
+    red: 8%
+    green: 13%
+    blue: 16%
+  - id: cyan
+    red: 0%
+    green: 83%
+    blue: 88%
+  - id: lime
+    red: 58%
+    green: 100%
+    blue: 16%
+  - id: white
+    red: 94%
+    green: 97%
+    blue: 98%
+  - id: muted
+    red: 55%
+    green: 63%
+    blue: 66%
+  - id: amber
+    red: 100%
+    green: 68%
+    blue: 16%
+
+display:
+  - platform: mipi_spi
+    id: tft_display
+    model: ILI9341
+    cs_pin: D1
+    dc_pin: D2
+    reset_pin: D0
+    rotation: 90
+    data_rate: 20MHz
+    update_interval: 10s
+    lambda: |-
+      it.fill(id(bg));
+      it.filled_rectangle(0, 0, 320, 43, id(panel));
+
+      int page = id(display_page);
+      it.printf(305, 11, id(font_small), id(muted), TextAlign::TOP_RIGHT, "%d/4", page + 1);
+
+      if (page == 1) {
+        it.printf(16, 11, id(font_small), id(white), "METEO");
+        it.printf(16, 62, id(font_small), id(muted), "TEMPERATURA ESTERNA");
+        if (!isnan(id(outside_temperature).state)) {
+          it.printf(16, 90, id(font_large), id(cyan), "%.1f C", id(outside_temperature).state);
+        } else {
+          it.printf(16, 90, id(font_large), id(muted), "-- C");
+        }
+        it.printf(16, 174, id(font_small), id(muted), "Premi K1 per continuare");
+        return;
+      }
+
+      if (page == 2) {
+        it.printf(16, 11, id(font_small), id(white), "INVERTER");
+        it.printf(16, 62, id(font_small), id(muted), "STATO SOLARMAN");
+        if (id(inverter_status).has_state()) {
+          it.printf(16, 90, id(font_medium), id(lime), "%s", id(inverter_status).state.c_str());
+        } else {
+          it.printf(16, 90, id(font_medium), id(muted), "NON DISPONIBILE");
+        }
+        uint32_t age_ms = millis() - id(last_solarman_update_ms);
+        if (id(last_solarman_update_ms) != 0 && age_ms <= 180000) {
+          it.printf(16, 145, id(font_medium), id(lime), "DATI LIVE");
+        } else if (id(last_solarman_update_ms) != 0) {
+          it.printf(16, 145, id(font_medium), id(amber), "DATI OLD %lum", (unsigned long) (age_ms / 60000));
+        } else {
+          it.printf(16, 145, id(font_medium), id(muted), "NESSUN DATO");
+        }
+        return;
+      }
+
+      if (page == 3) {
+        it.printf(16, 11, id(font_small), id(white), "SISTEMA");
+        it.printf(16, 62, id(font_small), id(muted), "SEGNALE WIFI");
+        it.printf(16, 86, id(font_medium), id(cyan), "%.0f dBm", id(wifi_rssi).state);
+        it.printf(16, 132, id(font_small), id(muted), "UPTIME");
+        it.printf(16, 156, id(font_medium), id(white), "%.1f ore", id(panel_uptime).state / 3600.0f);
+        it.printf(16, 204, id(font_small), id(lime), "ESP8266 ONLINE");
+        return;
+      }
+
+      if (!id(ha_time).now().is_valid()) {
+        it.printf(160, 70, id(font_medium), id(white), TextAlign::TOP_CENTER, "CONFIG WIFI");
+        it.printf(160, 112, id(font_small), id(cyan), TextAlign::TOP_CENTER, "Pannello HA Setup");
+        it.printf(160, 142, id(font_small), id(muted), TextAlign::TOP_CENTER, "192.168.4.1");
+        return;
+      }
+
+      auto now = id(ha_time).now();
+      it.printf(15, 11, id(font_small), id(white), "%02d:%02d", now.hour, now.minute);
+      if (!isnan(id(outside_temperature).state)) {
+        it.printf(305, 11, id(font_small), id(white), TextAlign::TOP_RIGHT,
+                  "%.1f C", id(outside_temperature).state);
+      } else {
+        it.printf(305, 11, id(font_small), id(muted), TextAlign::TOP_RIGHT, "-- C");
+      }
+
+      it.printf(16, 58, id(font_small), id(muted), "PRODUZIONE SOLARE");
+      if (!isnan(id(cached_solar_power))) {
+        it.printf(16, 81, id(font_large), id(lime), "%.0f W", id(cached_solar_power));
+      } else {
+        it.printf(16, 81, id(font_large), id(muted), "-- W");
+      }
+
+      it.filled_rectangle(12, 145, 296, 78, id(panel));
+      if (!isnan(id(cached_solar_today))) {
+        it.printf(28, 161, id(font_small), id(muted), "ENERGIA OGGI");
+        it.printf(28, 184, id(font_medium), id(cyan), "%.1f kWh", id(cached_solar_today));
+      } else {
+        it.printf(28, 161, id(font_small), id(muted), "ENERGIA OGGI");
+        it.printf(28, 184, id(font_medium), id(muted), "-- kWh");
+      }
+
+      uint32_t age_ms = millis() - id(last_solarman_update_ms);
+      if (id(last_solarman_update_ms) != 0 && age_ms <= 180000) {
+        it.printf(292, 176, id(font_small), id(lime), TextAlign::TOP_RIGHT, "LIVE");
+      } else if (id(last_solarman_update_ms) != 0) {
+        it.printf(292, 176, id(font_small), id(amber), TextAlign::TOP_RIGHT,
+                  "OLD %lum", (unsigned long) (age_ms / 60000));
+      } else {
+        it.printf(292, 176, id(font_small), id(muted), TextAlign::TOP_RIGHT, "NO DATA");
+      }
